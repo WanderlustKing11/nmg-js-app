@@ -84,12 +84,31 @@ p {
 .bottom {
     display: flex;
     justify-content: center;
-    padding: 25px;
+    padding: 10px;
 }
 
 #message p {
-    font-size: 1rem;
+    font-size: 1.4rem;
     letter-spacing: 1px;
+}
+
+#message {
+    position: relative;
+    top: -20px;
+}
+
+#message.initial-message {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+}
+
+#message.initial-message p {
+    font-size: 2rem;
+    font-weight: 600;
+    letter-spacing: 2px;
 }
 
 .game-over {
@@ -112,4 +131,11 @@ p {
     color: #cc3333;
     text-shadow: 0 0 20px rgba(204, 51, 51, 0.5);
     letter-spacing: 5px;
+}
+
+.game-over .final-score {
+    font-size: 2rem;
+    color: #ff9900;
+    margin-top: 20px;
+    font-family: 'VT323', monospace;
 }
