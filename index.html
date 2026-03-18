@@ -38,6 +38,9 @@
 
     <nav id='slide-menu' role="navigation" aria-label="Menu" aria-hidden="true">
         <div id='menu-content'>
+            <div class='menu-buttons'>
+                <button id='change-player-btn' class='menu-btn'>Change Player</button>
+            </div>
             <div class='theme-toggle'>
                 <span class='theme-label' id='theme-label-text'>Dark Mode</span>
                 <label class='switch'>
@@ -49,13 +52,17 @@
     </nav>
 
     <main id="main-content">
+        <div id='level-display' role="status" aria-live="polite">
+            <p>Level <span id='level-value'>1</span></p>
+        </div>
+
         <div id='number-display' aria-live="polite" aria-atomic="true">
             <h2 id='number-text' aria-hidden="true">432</h2>
         </div>
 
         <div id="answer-input">
             <label for="user-answer" class="visually-hidden">Enter the number</label>
-            <input id='user-answer' type="number" aria-describedby="message" placeholder="">
+            <input id='user-answer' type="text" inputmode="numeric" aria-describedby="message" placeholder="">
         </div>
     </main>
 
@@ -67,6 +74,10 @@
 
     <div class='game-over' role="dialog" aria-modal="true" aria-labelledby="game-over-title" aria-hidden="true">
         <h1 id="game-over-title">Game Over</h1>
+    </div>
+
+    <div id='high-score-board' class='high-score-board' role="dialog" aria-modal="true" aria-labelledby="high-score-title" aria-hidden="true">
+        <h2 id="high-score-title">High Scores</h2>
     </div>
 
     <script src="script.js"></script>

@@ -104,6 +104,18 @@ main {
     flex: 1;
 }
 
+#level-display {
+    margin-bottom: 60px;
+}
+
+#level-display p {
+    font-size: 1.8rem;
+    font-weight: 600;
+    letter-spacing: 3px;
+    opacity: 0.8;
+    margin: 0;
+}
+
 #number-display h2 {
     font-size: 10rem;
     margin: 20px 0;
@@ -165,7 +177,7 @@ main {
 
 #message.initial-message {
     position: absolute;
-    top: 50%;
+    top: 40%;
     left: 50%;
     transform: translate(-50%, -50%);
     text-align: center;
@@ -212,6 +224,78 @@ main {
     margin-top: 10px;
     font-family: 'VT323', monospace;
     text-shadow: 0 0 10px rgba(204, 51, 51, 0.5);
+}
+
+.game-over .new-high-score {
+    font-size: 2rem;
+    margin-top: 20px;
+    font-family: 'VT323', monospace;
+}
+
+.game-over .new-high-score span {
+    font-weight: bold;
+}
+
+.high-score-board {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(5, 5, 5, 0.95);
+    border: 6px solid #cc3333;
+    border-radius: 20px;
+    padding: 40px 60px;
+    text-align: center;
+    font-family: 'VT323', monospace;
+    z-index: 10;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.high-score-board h2 {
+    font-size: 2.5rem;
+    margin: 0 0 20px 0;
+    color: #ff9900;
+    text-shadow: 0 0 10px rgba(255, 153, 0, 0.5);
+    letter-spacing: 3px;
+}
+
+.high-score-board p {
+    font-size: 1.5rem;
+    color: var(--text-color);
+    margin: 8px 0;
+    font-family: 'VT323', monospace;
+}
+
+.high-score-board .current-score {
+    color: #4caf50;
+    font-weight: bold;
+}
+
+.menu-buttons {
+    margin-bottom: 30px;
+}
+
+.menu-btn {
+    width: 100%;
+    padding: 12px 20px;
+    background-color: var(--border-color);
+    color: var(--bg-color);
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+.menu-btn:hover {
+    background-color: var(--text-color);
+    transform: scale(1.02);
+}
+
+.menu-btn:active {
+    transform: scale(0.98);
 }
 
 #menu-icon {

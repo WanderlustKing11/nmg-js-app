@@ -2,15 +2,18 @@
 // GLOBAL VARIABLES
 let score = 0
 let currentRGN = 0;
-let gameState = 'waiting'; // 'waiting', 'playing', 'gameover', 'initial'
+let gameState = 'waiting'; // 'waiting', 'playing', 'gameover', 'initial', 'scorescreen'
 let currentLevel = 1;
 let inputCooldown = false;
 let timeoutId = null;
+let playerName = '';
+let isNewHighScore = false;
 
 
 // DOM Elements
 let numberText = document.getElementById('number-text');
 let scoreValue = document.getElementById('score-value');
+let levelValue = document.getElementById('level-value');
 let userAnswer = document.getElementById('user-answer');
 let inputField = document.getElementById('answer-input');
 let message = document.getElementById('message');
@@ -18,6 +21,8 @@ let gameOverScreen = document.querySelector('.game-over');
 let menuIcon = document.getElementById('menu-icon');
 let slideMenu = document.getElementById('slide-menu');
 let themeCheckbox = document.getElementById('theme-checkbox');
+let highScoreBoard = document.getElementById('high-score-board');
+let changePlayerBtn = document.getElementById('change-player-btn');
 
 // Theme Toggle
 function initTheme() {
@@ -29,6 +34,8 @@ function initTheme() {
         document.documentElement.setAttribute('data-theme', 'dark');
         themeCheckbox.checked = true;
     }
+    
+    playerName = localStorage.getItem('nmgPlayerName') || '';
 }
 
 themeCheckbox.addEventListener('change', function () {
@@ -51,20 +58,95 @@ menuIcon.addEventListener('click', () => {
     menuIcon.setAttribute('aria-label', isOpen ? 'Close menu' : 'Open menu');
 });
 
+userAnswer.addEventListener('input', function() {
+    if (gameState === 'initial') {
+        message.innerHTML = 'Hit <strong>Enter</strong> to Start<br><br>You have 5 seconds to answer.';
+    }
+});
+
+changePlayerBtn.addEventListener('click', () => {
+    slideMenu.classList.remove('open');
+    menuIcon.classList.remove('open');
+    menuIcon.setAttribute('aria-expanded', false);
+    slideMenu.setAttribute('aria-hidden', true);
+    menuIcon.setAttribute('aria-label', 'Open menu');
+    
+    playerName = '';
+    localStorage.removeItem('nmgPlayerName');
+    
+    gameState = 'initial';
+    score = 0;
+    currentLevel = 1;
+    scoreValue.innerText = '0';
+    levelValue.innerText = '1';
+    numberText.style.visibility = 'hidden';
+    gameOverScreen.style.visibility = 'hidden';
+    highScoreBoard.style.visibility = 'hidden';
+    userAnswer.value = '';
+    userAnswer.disabled = false;
+    userAnswer.focus();
+    message.innerHTML = 'Enter your name<br><br>Hit <strong>Enter</strong> to Start<br><br>You have 5 seconds to answer.';
+    message.classList.add('initial-message');
+});
+
 function handleKey(e) {
     if (e.key === 'Enter') {
         if (inputCooldown) return;
 
-        if (gameState === 'initial' || gameState === 'waiting' || gameState === 'gameover') {
+        if (gameState === 'initial') {
             inputCooldown = true;
-            gameOverScreen.style.visibility = "hidden";
+            
+            if (playerName && playerName.trim() !== '') {
+                gameOverScreen.style.visibility = "hidden";
+                gameState = 'playing';
+                score = 0;
+                currentLevel = 1;
+                scoreValue.innerText = "0";
+                levelValue.innerText = "1";
+                message.classList.remove('initial-message');
+                userAnswer.value = '';
+                userAnswer.disabled = false;
+                userAnswer.focus();
+                inputCooldown = false;
+                newRound();
+            } else {
+                let enteredName = userAnswer.value.trim().toUpperCase();
+                enteredName = enteredName.replace(/[^A-Z0-9]/g, '').slice(0, 10);
+                
+                if (enteredName === '') {
+                    inputCooldown = false;
+                    return;
+                }
+                
+                playerName = enteredName;
+                localStorage.setItem('nmgPlayerName', playerName);
+                userAnswer.value = '';
+                
+                gameOverScreen.style.visibility = "hidden";
+                gameState = 'playing';
+                score = 0;
+                currentLevel = 1;
+                scoreValue.innerText = "0";
+                levelValue.innerText = "1";
+                message.classList.remove('initial-message');
+                newRound();
+            }
+            setTimeout(() => { inputCooldown = false; }, 100);
+            
+        } else if (gameState === 'scorescreen') {
+            inputCooldown = true;
+            highScoreBoard.style.visibility = "hidden";
             gameState = 'playing';
             score = 0;
             currentLevel = 1;
             scoreValue.innerText = "0";
+            levelValue.innerText = "1";
+            userAnswer.value = '';
+            userAnswer.disabled = true;
             message.classList.remove('initial-message');
-            newRound();
             setTimeout(() => { inputCooldown = false; }, 100);
+            newRound();
+            
         } else if (gameState === 'playing') {
             inputCooldown = true;
             userAnswer.disabled = true;
@@ -88,6 +170,7 @@ function handleKey(e) {
                 userAnswer.value = '';
                 if (score % 4 === 0) {
                     currentLevel += 1;
+                    levelValue.innerText = currentLevel;
                 }
                 newRound();
             } else {
@@ -97,6 +180,85 @@ function handleKey(e) {
             }
         }
     }
+}
+
+// HIGH SCORE FUNCTIONS
+function getHighScores() {
+    let scores = localStorage.getItem('nmgHighScores');
+    return scores ? JSON.parse(scores) : [];
+}
+
+function saveHighScores(scores) {
+    localStorage.setItem('nmgHighScores', JSON.stringify(scores));
+}
+
+function isHighScore(newScore, playerName) {
+    let scores = getHighScores();
+    let existingPlayer = scores.find(s => s.name === playerName);
+    
+    if (existingPlayer) {
+        return newScore > existingPlayer.score;
+    }
+    
+    if (scores.length < 10) return true;
+    return newScore > scores[scores.length - 1].score;
+}
+
+function saveHighScore(name, newScore, level) {
+    let scores = getHighScores();
+    let upperName = name.toUpperCase();
+    let existingIndex = scores.findIndex(s => s.name === upperName);
+    
+    if (existingIndex !== -1) {
+        if (newScore > scores[existingIndex].score) {
+            scores[existingIndex] = {
+                name: upperName,
+                score: newScore,
+                level: level,
+                date: Date.now()
+            };
+            scores.sort((a, b) => b.score - a.score);
+            saveHighScores(scores);
+        }
+        return scores;
+    }
+    
+    let newEntry = {
+        name: upperName,
+        score: newScore,
+        level: level,
+        date: Date.now()
+    };
+    
+    scores.push(newEntry);
+    scores.sort((a, b) => b.score - a.score);
+    scores = scores.slice(0, 10);
+    saveHighScores(scores);
+    return scores;
+}
+
+function renderScoreBoard(currentPlayerScore = 0, currentPlayerLevel = 1) {
+    let scores = getHighScores();
+    let maxDisplay = Math.min(scores.length, 10);
+    let scoreHtml = '';
+    
+    for (let i = 0; i < maxDisplay; i++) {
+        let score = scores[i];
+        let isCurrentPlayer = score.score === currentPlayerScore && currentPlayerScore > 0;
+        let currentClass = isCurrentPlayer ? 'current-score' : '';
+        scoreHtml += `<p class="${currentClass}">${i + 1}. ${score.name} - ${score.score} (Lv ${score.level})</p>`;
+    }
+    
+    return scoreHtml;
+}
+
+function getRainbowText(text) {
+    let colors = ['#ff0000', '#ff7f00', '#ffff00', '#00ff00', '#0000ff', '#4b0082', '#9400d3'];
+    let result = '';
+    for (let i = 0; i < text.length; i++) {
+        result += `<span style="color: ${colors[i % colors.length]}">${text[i]}</span>`;
+    }
+    return result;
 }
 
 function formatNumberWithSpaces(num) {
@@ -134,10 +296,15 @@ function startGame() {
     score = 0;
     currentLevel = 1;
     scoreValue.innerText = "0";
+    levelValue.innerText = "1";
     numberText.style.visibility = "hidden";
     gameOverScreen.style.visibility = "hidden";
-    userAnswer.disabled = true;
-    message.innerHTML = "Hit <strong>Enter</strong> to Start<br><br>You have 5 seconds to answer.";
+    highScoreBoard.style.visibility = "hidden";
+    userAnswer.value = playerName || '';
+    userAnswer.disabled = false;
+    userAnswer.focus();
+    
+    message.innerHTML = 'Hit <strong>Enter</strong> to Start<br><br>You have 5 seconds to answer.';
     message.classList.add('initial-message');
 }
 
@@ -193,11 +360,33 @@ function endGame(timedOut = false) {
     console.log("Game Over! Start again by hitting 'Enter'");
     userAnswer.value = '';
     userAnswer.disabled = true;
+    clearTimeout(timeoutId);
+    
+    isNewHighScore = isHighScore(score, playerName);
+    
+    if (isNewHighScore && score > 0) {
+        saveHighScore(playerName, score, currentLevel);
+    }
+    
     let timedOutHtml = timedOut ? `<p class="timed-out">Timed Out</p>` : '';
-    gameOverScreen.innerHTML = `<h1>Game Over</h1><p class="final-score">Score: ${score}</p>${timedOutHtml}`;
+    let scoreLabel = isNewHighScore && score > 0 ? 
+        `<p class="new-high-score">${getRainbowText('New High Score!')}</p><p class="final-score">Score: ${score}</p>` : 
+        `<p class="final-score">Score: ${score}</p>`;
+    
+    gameOverScreen.innerHTML = `<h1>Game Over</h1>${timedOutHtml}${scoreLabel}`;
     gameOverScreen.style.visibility = "visible";
-    message.style.visibility = "visible";
-    message.innerHTML = "Hit <strong>Enter</strong> to Restart";
+    message.style.visibility = "hidden";
+    
+    setTimeout(() => {
+        gameState = 'scorescreen';
+        gameOverScreen.style.visibility = "hidden";
+        
+        let scoresHtml = renderScoreBoard(score, currentLevel);
+        highScoreBoard.innerHTML = `<h2>High Scores</h2>${scoresHtml}`;
+        highScoreBoard.style.visibility = "visible";
+        message.style.visibility = "visible";
+        message.innerHTML = "Hit <strong>Enter</strong> to Restart";
+    }, 2000);
 }
 
 
