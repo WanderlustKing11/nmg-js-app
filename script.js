@@ -14,13 +14,20 @@ let userAnswer = document.getElementById('user-answer');
 let inputField = document.getElementById('answer-input');
 let message = document.getElementById('message');
 let gameOverScreen = document.querySelector('.game-over');
+let menuIcon = document.getElementById('menu-icon');
+let slideMenu = document.getElementById('slide-menu');
+
 // Event Listeners
 document.addEventListener('keydown', handleKey);
+menuIcon.addEventListener('click', () => {
+    slideMenu.classList.toggle('open');
+    menuIcon.classList.toggle('open');
+});
 
 function handleKey(e) {
     if (e.key === 'Enter') {
         if (inputCooldown) return;
-        
+
         if (gameState === 'initial' || gameState === 'waiting' || gameState === 'gameover') {
             inputCooldown = true;
             gameOverScreen.style.visibility = "hidden";
@@ -34,14 +41,14 @@ function handleKey(e) {
         } else if (gameState === 'playing') {
             inputCooldown = true;
             userAnswer.disabled = true;
-            
+
             if (userAnswer.value === '') {
                 userAnswer.disabled = false;
                 userAnswer.focus();
                 inputCooldown = false;
                 return;
             }
-            
+
             if (userAnswer.value == currentRGN) {
                 userAnswer.style.borderColor = '#4caf50';
                 setTimeout(() => {

@@ -26,6 +26,7 @@ p {
     display: flex;
     justify-content: space-between;
     padding: 15px 5px;
+    position: relative;
 }
 
 #title h3 {
@@ -150,4 +151,42 @@ p {
     color: #ff9900;
     margin-top: 20px;
     font-family: 'VT323', monospace;
+}
+
+#menu-icon {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    cursor: pointer;
+    color: var(--gray);
+    transition: all 1s ease;
+    z-index: 100;
+}
+
+#menu-icon:hover {
+    transform: scale(1.1);
+}
+
+#menu-icon.open {
+    right: calc(20% - 42px);
+    transform: rotate(-540deg);
+}
+
+#slide-menu {
+    position: fixed;
+    top: 0;
+    right: -20%;
+    width: 20%;
+    height: 100vh;
+    background-color: #000000;
+    border-left: 2px solid var(--accent);
+    transition: right 0.3s ease, box-shadow 0.3s ease;
+    z-index: 99;
+    padding: 60px 20px;
+    box-sizing: border-box;
+}
+
+#slide-menu.open {
+    right: 0;
+    box-shadow: -10px 0 30px rgba(0, 0, 0, 0.5);
 }
