@@ -334,30 +334,18 @@ main {
     font-weight: bold;
 }
 
-.menu-buttons {
-    margin-bottom: 30px;
-}
-
-.menu-btn {
-    width: 100%;
-    padding: 12px 20px;
-    background-color: var(--border-color);
-    color: var(--bg-color);
-    border: none;
-    border-radius: 8px;
+.menu-link {
+    display: block;
+    color: var(--text-color);
+    text-decoration: none;
     font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.3s, transform 0.2s;
+    padding: 12px 0;
+    transition: color 0.2s ease;
 }
 
-.menu-btn:hover {
-    background-color: var(--text-color);
-    transform: scale(1.02);
-}
-
-.menu-btn:active {
-    transform: scale(0.98);
+.menu-link:hover {
+    color: var(--focus-color);
+    text-decoration: underline;
 }
 
 #menu-icon {
@@ -473,7 +461,7 @@ main {
     align-items: center;
     justify-content: space-between;
     padding: 10px 0;
-    margin-top: 40vh;
+    margin-top: 35vh;
 }
 
 .theme-label {

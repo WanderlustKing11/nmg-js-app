@@ -1,23 +1,36 @@
 # Numbers Memory Game
 
-A browser-based memory game where players must remember and recall sequences of numbers.
+A simple yet challenging browser-based game that tests your memory by having you recall numbers of increasing length and complexity.
 
 ## How to Play
 
-1. Open `index.html` in any web browser
-2. Press **Enter** to start
-3. A number will flash briefly on screen — memorize it
-4. When prompted, type the number and press **Enter**
-5. Correct answers increase your score and advance you to the next round
-6. Every 5 correct answers, the level increases, adding more digits
-7. One wrong answer ends the game
+1. Enter your name at the start screen and press **Enter**
+2. A number flashes briefly on screen — memorize it
+3. Type the number and press **Enter** before the 5-second timer runs out
+4. Correct answers increase your score and advance you to the next round
+5. Every 4 correct answers, the level increases — more digits, more challenge
+6. One wrong answer ends the game
 
-## Running Locally
+## Download & Run
 
-Simply open the `index.html` file in your browser. No server or installation required.
+No installation required — just open the HTML file in any modern web browser.
 
-## Technologies
+**Live Demo:** https://wanderlustking11.github.io/nmg-js-app/
 
-- HTML5
-- CSS3
-- Vanilla JavaScript
+## Features
+
+- **Progressive Difficulty** — Levels increase every 4 correct answers with longer numbers
+- **5-Second Timer** — Race against the clock to recall and enter each number
+- **Dynamic Number Display** — Numbers are formatted with spaces for easy reading
+- **High Score Board** — Local leaderboard tracks your top 10 scores
+- **Dark/Light Mode** — Toggle between themes, preference is saved
+- **Animated UI** — Smooth animations for score and level changes
+- **Accessible** — Built with keyboard navigation and screen reader support
+
+## Future Plans (Phase 2)
+
+- Sound effects for correct/wrong answers
+- Online leaderboard with Firebase
+- Difficulty selection (Easy/Medium/Hard)
+- Animated number transitions
+- Unicorn theme option
