@@ -16,6 +16,29 @@ let message = document.getElementById('message');
 let gameOverScreen = document.querySelector('.game-over');
 let menuIcon = document.getElementById('menu-icon');
 let slideMenu = document.getElementById('slide-menu');
+let themeCheckbox = document.getElementById('theme-checkbox');
+
+// Theme Toggle
+function initTheme() {
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    if (savedTheme === 'light') {
+        document.documentElement.setAttribute('data-theme', 'light');
+        themeCheckbox.checked = false;
+    } else {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        themeCheckbox.checked = true;
+    }
+}
+
+themeCheckbox.addEventListener('change', function() {
+    if (this.checked) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        localStorage.setItem('theme', 'dark');
+    } else {
+        document.documentElement.setAttribute('data-theme', 'light');
+        localStorage.setItem('theme', 'light');
+    }
+});
 
 // Event Listeners
 document.addEventListener('keydown', handleKey);
@@ -134,4 +157,5 @@ function endGame() {
 // MAIN... Calling all functions
 // const rng = generateRandomNumber();
 // console.log("Current random number generated:", rng);
+initTheme();
 startGame()
