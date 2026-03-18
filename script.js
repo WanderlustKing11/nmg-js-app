@@ -5,6 +5,7 @@ let currentRGN = 0;
 let gameState = 'waiting'; // 'waiting', 'playing', 'gameover', 'initial'
 let currentLevel = 1;
 let inputCooldown = false;
+let timeoutId = null;
 
 
 // DOM Elements
@@ -75,6 +76,8 @@ function handleKey(e) {
                 return;
             }
 
+            clearTimeout(timeoutId);
+
             if (userAnswer.value == currentRGN) {
                 userAnswer.style.borderColor = '#4caf50';
                 setTimeout(() => {
@@ -134,7 +137,7 @@ function startGame() {
     numberText.style.visibility = "hidden";
     gameOverScreen.style.visibility = "hidden";
     userAnswer.disabled = true;
-    message.innerHTML = "Hit <strong>Enter</strong> to Start";
+    message.innerHTML = "Hit <strong>Enter</strong> to Start<br><br>You have 5 seconds to answer.";
     message.classList.add('initial-message');
 }
 
@@ -166,6 +169,12 @@ function newRound() {
         inputCooldown = false;
         message.style.visibility = "visible";
         message.innerHTML = "Enter your answer";
+        
+        timeoutId = setTimeout(() => {
+            gameState = 'gameover';
+            endGame(true);
+            setTimeout(() => { inputCooldown = false; }, 1500);
+        }, 5000);
     }, 1000 + flashDuration);
 
 }
@@ -180,11 +189,12 @@ function correctAnswer() {
     newRound();
 }
 
-function endGame() {
+function endGame(timedOut = false) {
     console.log("Game Over! Start again by hitting 'Enter'");
     userAnswer.value = '';
     userAnswer.disabled = true;
-    gameOverScreen.innerHTML = `<h1>Game Over</h1><p class="final-score">Score: ${score}</p>`;
+    let timedOutHtml = timedOut ? `<p class="timed-out">Timed Out</p>` : '';
+    gameOverScreen.innerHTML = `<h1>Game Over</h1><p class="final-score">Score: ${score}</p>${timedOutHtml}`;
     gameOverScreen.style.visibility = "visible";
     message.style.visibility = "visible";
     message.innerHTML = "Hit <strong>Enter</strong> to Restart";

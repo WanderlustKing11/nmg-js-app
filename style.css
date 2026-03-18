@@ -206,6 +206,14 @@ main {
     font-family: 'VT323', monospace;
 }
 
+.game-over .timed-out {
+    font-size: 2rem;
+    color: #cc3333;
+    margin-top: 10px;
+    font-family: 'VT323', monospace;
+    text-shadow: 0 0 10px rgba(204, 51, 51, 0.5);
+}
+
 #menu-icon {
     position: absolute;
     top: 15px;
