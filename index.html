@@ -9,9 +9,9 @@
     <meta name="theme-color" content="#0d0d0d">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@800&family=VT323&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-    <title>Numbers Memory Game</title>
+    <title>NMG</title>
 </head>
 
 <body>
@@ -36,6 +36,10 @@
         <p>Score: <span id='score-value'>0</span></p>
     </div>
 
+    <div id='level-display' role="status" aria-live="polite">
+        <p>Level <span id='level-value'>1</span></p>
+    </div>
+
     <nav id='slide-menu' role="navigation" aria-label="Menu" aria-hidden="true">
         <div id='menu-content'>
             <div class='menu-buttons'>
@@ -52,8 +56,8 @@
     </nav>
 
     <main id="main-content">
-        <div id='level-display' role="status" aria-live="polite">
-            <p>Level <span id='level-value'>1</span></p>
+        <div id='timer-display' role="status" aria-live="polite">
+            <span id='timer-value'>05:00</span>
         </div>
 
         <div id='number-display' aria-live="polite" aria-atomic="true">
@@ -85,7 +89,8 @@
         <h1 id="game-over-title">Game Over</h1>
     </div>
 
-    <div id='high-score-board' class='high-score-board' role="dialog" aria-modal="true" aria-labelledby="high-score-title" aria-hidden="true">
+    <div id='high-score-board' class='high-score-board' role="dialog" aria-modal="true"
+        aria-labelledby="high-score-title" aria-hidden="true">
         <h2 id="high-score-title">High Scores</h2>
     </div>
 

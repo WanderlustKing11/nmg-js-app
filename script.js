@@ -6,6 +6,8 @@ let gameState = 'waiting'; // 'waiting', 'playing', 'gameover', 'initial', 'scor
 let currentLevel = 1;
 let inputCooldown = false;
 let timeoutId = null;
+let timerInterval = null;
+let timerRemaining = 5000;
 let playerName = '';
 let isNewHighScore = false;
 
@@ -14,6 +16,8 @@ let isNewHighScore = false;
 let numberText = document.getElementById('number-text');
 let scoreValue = document.getElementById('score-value');
 let levelValue = document.getElementById('level-value');
+let timerValue = document.getElementById('timer-value');
+let timerDisplay = document.getElementById('timer-display');
 let userAnswer = document.getElementById('user-answer');
 let inputField = document.getElementById('answer-input');
 let message = document.getElementById('message');
@@ -25,6 +29,80 @@ let highScoreBoard = document.getElementById('high-score-board');
 let changePlayerBtn = document.getElementById('change-player-btn');
 let startScreen = document.getElementById('start-screen');
 let nameInput = document.getElementById('name-input');
+
+// Animation helper functions
+function animateIncrement(element, newValue) {
+    element.classList.add('anim-out');
+    setTimeout(() => {
+        element.innerText = newValue;
+        element.classList.remove('anim-out');
+        element.classList.add('anim-in');
+        setTimeout(() => {
+            element.classList.remove('anim-in');
+        }, 150);
+    }, 120);
+}
+
+function animateScore(newScore) {
+    animateIncrement(scoreValue, newScore);
+}
+
+function animateLevel(newLevel) {
+    animateIncrement(levelValue, newLevel);
+}
+
+// Timer functions
+function formatTime(ms) {
+    let seconds = Math.floor(ms / 1000);
+    let hundredths = Math.floor((ms % 1000) / 10);
+    return `${seconds.toString().padStart(2, '0')}:${hundredths.toString().padStart(2, '0')}`;
+}
+
+function interpolateColor(percent) {
+    let grayR = 138, grayG = 143, grayB = 152;
+    let redR = 244, redG = 67, redB = 54;
+    
+    let r = Math.round(grayR + (redR - grayR) * percent);
+    let g = Math.round(grayG + (redG - grayG) * percent);
+    let b = Math.round(grayB + (redB - grayB) * percent);
+    
+    return `rgb(${r}, ${g}, ${b})`;
+}
+
+function startTimer() {
+    timerRemaining = 5000;
+    timerValue.innerText = formatTime(timerRemaining);
+    timerValue.style.color = '';
+    
+    timerInterval = setInterval(() => {
+        timerRemaining -= 10;
+        timerValue.innerText = formatTime(timerRemaining);
+        
+        let msIntoSecond = timerRemaining % 1000;
+        let distanceFromWhole = Math.abs(msIntoSecond);
+        
+        if (distanceFromWhole <= 150 && timerRemaining > 0) {
+            let intensity = 1 - (distanceFromWhole / 150);
+            timerValue.style.color = interpolateColor(intensity);
+        } else {
+            timerValue.style.color = '';
+        }
+    }, 10);
+}
+
+function stopTimer() {
+    if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+    }
+}
+
+function resetTimer() {
+    stopTimer();
+    timerRemaining = 5000;
+    timerValue.innerText = "05:00";
+    timerValue.style.color = '';
+}
 
 // Theme Toggle
 function initTheme() {
@@ -156,6 +234,7 @@ function handleKey(e) {
             }
 
             clearTimeout(timeoutId);
+            stopTimer();
 
             if (userAnswer.value == currentRGN) {
                 userAnswer.style.borderColor = '#4caf50';
@@ -163,11 +242,11 @@ function handleKey(e) {
                     userAnswer.style.borderColor = '';
                 }, 500);
                 score += 1;
-                scoreValue.innerText = score;
+                animateScore(score);
                 userAnswer.value = '';
                 if (score % 4 === 0) {
                     currentLevel += 1;
-                    levelValue.innerText = currentLevel;
+                    animateLevel(currentLevel);
                 }
                 newRound();
             } else {
@@ -294,6 +373,7 @@ function startGame() {
     currentLevel = 1;
     scoreValue.innerText = "0";
     levelValue.innerText = "1";
+    resetTimer();
     numberText.style.visibility = "hidden";
     gameOverScreen.style.visibility = "hidden";
     highScoreBoard.style.visibility = "hidden";
@@ -333,6 +413,7 @@ function newRound() {
         inputCooldown = false;
         message.style.visibility = "visible";
         message.innerHTML = "Enter your answer";
+        startTimer();
         
         timeoutId = setTimeout(() => {
             gameState = 'gameover';
@@ -358,6 +439,8 @@ function endGame(timedOut = false) {
     userAnswer.value = '';
     userAnswer.disabled = true;
     clearTimeout(timeoutId);
+    stopTimer();
+    resetTimer();
     
     isNewHighScore = isHighScore(score, playerName);
     

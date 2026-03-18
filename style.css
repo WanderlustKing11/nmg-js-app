@@ -94,6 +94,80 @@ p {
 #score p {
     font-size: 1.2rem;
     font-weight: 600;
+    color: #635028;
+}
+
+#level-display {
+    position: absolute;
+    top: 200px;
+    left: 25%;
+}
+
+#level-display p {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #635028;
+}
+
+#timer-display {
+    margin-bottom: 40px;
+}
+
+#timer-display span {
+    font-size: 2rem;
+    font-weight: 800;
+    font-family: 'Nunito', sans-serif;
+    letter-spacing: 2px;
+    color: var(--text-color);
+    transition: color 0.15s ease-out;
+}
+
+#score-value {
+    color: #e6b514;
+    display: inline-block;
+}
+
+#level-value {
+    color: #e6b514;
+    display: inline-block;
+}
+
+@keyframes slideUpOut {
+    0% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(-15px);
+    }
+}
+
+@keyframes slideUpIn {
+    0% {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+#score-value.anim-out {
+    animation: slideUpOut 0.12s ease-out forwards;
+}
+
+#score-value.anim-in {
+    animation: slideUpIn 0.15s ease-out forwards;
+}
+
+#level-value.anim-out {
+    animation: slideUpOut 0.12s ease-out forwards;
+}
+
+#level-value.anim-in {
+    animation: slideUpIn 0.15s ease-out forwards;
 }
 
 main {
@@ -102,18 +176,6 @@ main {
     align-items: center;
     justify-content: center;
     flex: 1;
-}
-
-#level-display {
-    margin-bottom: 60px;
-}
-
-#level-display p {
-    font-size: 1.8rem;
-    font-weight: 600;
-    letter-spacing: 3px;
-    opacity: 0.8;
-    margin: 0;
 }
 
 #number-display h2 {
