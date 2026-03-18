@@ -30,7 +30,7 @@ function initTheme() {
     }
 }
 
-themeCheckbox.addEventListener('change', function() {
+themeCheckbox.addEventListener('change', function () {
     if (this.checked) {
         document.documentElement.setAttribute('data-theme', 'dark');
         localStorage.setItem('theme', 'dark');
@@ -83,7 +83,7 @@ function handleKey(e) {
                 score += 1;
                 scoreValue.innerText = score;
                 userAnswer.value = '';
-                if (score % 5 === 0) {
+                if (score % 4 === 0) {
                     currentLevel += 1;
                 }
                 newRound();
@@ -96,9 +96,32 @@ function handleKey(e) {
     }
 }
 
+function formatNumberWithSpaces(num) {
+    let str = num.toString();
+    let len = str.length;
+    
+    if (len === 6 || len === 8 || len === 10) {
+        let half = len / 2;
+        return str.slice(0, half) + ' ' + str.slice(half);
+    } else if (len === 9) {
+        return str.slice(0, 3) + ' ' + str.slice(3, 6) + ' ' + str.slice(6);
+    }
+    
+    return str;
+}
+
 function rng() {
-    let min = Math.pow(10, currentLevel + 1);
-    let max = min * 9;
+    let digitCount;
+    
+    if (currentLevel >= 3) {
+        let maxDigits = currentLevel + 2;
+        digitCount = Math.floor(Math.random() * (maxDigits - 2 + 1)) + 2;
+    } else {
+        digitCount = currentLevel + 2;
+    }
+    
+    let min = Math.pow(10, digitCount - 1);
+    let max = Math.pow(10, digitCount) - 1;
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
@@ -118,8 +141,19 @@ function startGame() {
 function newRound() {
     userAnswer.disabled = true;
     currentRGN = rng();
-    numberText.innerText = currentRGN;
+    numberText.innerText = formatNumberWithSpaces(currentRGN);
     message.style.visibility = "hidden";
+
+    let digitCount = currentRGN.toString().length;
+    let flashDuration = 1000;
+
+    if (currentLevel >= 3) {
+        if (digitCount === 2) {
+            flashDuration = 250;
+        } else if (digitCount === 3) {
+            flashDuration = 500;
+        }
+    }
 
     setTimeout(() => {
         numberText.style.visibility = "visible";
@@ -132,7 +166,7 @@ function newRound() {
         inputCooldown = false;
         message.style.visibility = "visible";
         message.innerHTML = "Enter your answer";
-    }, 2000);
+    }, 1000 + flashDuration);
 
 }
 
@@ -158,7 +192,6 @@ function endGame() {
 
 
 // MAIN... Calling all functions
-// const rng = generateRandomNumber();
-// console.log("Current random number generated:", rng);
+
 initTheme();
 startGame()
