@@ -23,6 +23,8 @@ let slideMenu = document.getElementById('slide-menu');
 let themeCheckbox = document.getElementById('theme-checkbox');
 let highScoreBoard = document.getElementById('high-score-board');
 let changePlayerBtn = document.getElementById('change-player-btn');
+let startScreen = document.getElementById('start-screen');
+let nameInput = document.getElementById('name-input');
 
 // Theme Toggle
 function initTheme() {
@@ -36,6 +38,13 @@ function initTheme() {
     }
     
     playerName = localStorage.getItem('nmgPlayerName') || '';
+    
+    if (playerName) {
+        startScreen.classList.add('hidden');
+        startGame();
+    } else {
+        nameInput.focus();
+    }
 }
 
 themeCheckbox.addEventListener('change', function () {
@@ -58,10 +67,32 @@ menuIcon.addEventListener('click', () => {
     menuIcon.setAttribute('aria-label', isOpen ? 'Close menu' : 'Open menu');
 });
 
-userAnswer.addEventListener('input', function() {
-    if (gameState === 'initial') {
-        message.innerHTML = 'Hit <strong>Enter</strong> to Start<br><br>You have 5 seconds to answer.';
+nameInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+        if (inputCooldown) return;
+        
+        let enteredName = nameInput.value.trim().toUpperCase();
+        enteredName = enteredName.replace(/[^A-Z0-9]/g, '').slice(0, 10);
+        
+        if (enteredName === '') {
+            return;
+        }
+        
+        playerName = enteredName;
+        localStorage.setItem('nmgPlayerName', playerName);
+        
+        startScreen.classList.add('hidden');
+        startGame();
     }
+});
+
+nameInput.addEventListener('input', function() {
+    let value = this.value.toUpperCase();
+    value = value.replace(/[^A-Z0-9]/g, '');
+    if (value.length > 10) {
+        value = value.slice(0, 10);
+    }
+    this.value = value;
 });
 
 changePlayerBtn.addEventListener('click', () => {
@@ -74,19 +105,9 @@ changePlayerBtn.addEventListener('click', () => {
     playerName = '';
     localStorage.removeItem('nmgPlayerName');
     
-    gameState = 'initial';
-    score = 0;
-    currentLevel = 1;
-    scoreValue.innerText = '0';
-    levelValue.innerText = '1';
-    numberText.style.visibility = 'hidden';
-    gameOverScreen.style.visibility = 'hidden';
-    highScoreBoard.style.visibility = 'hidden';
-    userAnswer.value = '';
-    userAnswer.disabled = false;
-    userAnswer.focus();
-    message.innerHTML = 'Enter your name<br><br>Hit <strong>Enter</strong> to Start<br><br>You have 5 seconds to answer.';
-    message.classList.add('initial-message');
+    startScreen.classList.remove('hidden');
+    nameInput.value = '';
+    nameInput.focus();
 });
 
 function handleKey(e) {
@@ -96,41 +117,17 @@ function handleKey(e) {
         if (gameState === 'initial') {
             inputCooldown = true;
             
-            if (playerName && playerName.trim() !== '') {
-                gameOverScreen.style.visibility = "hidden";
-                gameState = 'playing';
-                score = 0;
-                currentLevel = 1;
-                scoreValue.innerText = "0";
-                levelValue.innerText = "1";
-                message.classList.remove('initial-message');
-                userAnswer.value = '';
-                userAnswer.disabled = false;
-                userAnswer.focus();
-                inputCooldown = false;
-                newRound();
-            } else {
-                let enteredName = userAnswer.value.trim().toUpperCase();
-                enteredName = enteredName.replace(/[^A-Z0-9]/g, '').slice(0, 10);
-                
-                if (enteredName === '') {
-                    inputCooldown = false;
-                    return;
-                }
-                
-                playerName = enteredName;
-                localStorage.setItem('nmgPlayerName', playerName);
-                userAnswer.value = '';
-                
-                gameOverScreen.style.visibility = "hidden";
-                gameState = 'playing';
-                score = 0;
-                currentLevel = 1;
-                scoreValue.innerText = "0";
-                levelValue.innerText = "1";
-                message.classList.remove('initial-message');
-                newRound();
-            }
+            gameOverScreen.style.visibility = "hidden";
+            gameState = 'playing';
+            score = 0;
+            currentLevel = 1;
+            scoreValue.innerText = "0";
+            levelValue.innerText = "1";
+            message.classList.remove('initial-message');
+            userAnswer.value = '';
+            userAnswer.disabled = false;
+            userAnswer.focus();
+            newRound();
             setTimeout(() => { inputCooldown = false; }, 100);
             
         } else if (gameState === 'scorescreen') {
@@ -300,7 +297,7 @@ function startGame() {
     numberText.style.visibility = "hidden";
     gameOverScreen.style.visibility = "hidden";
     highScoreBoard.style.visibility = "hidden";
-    userAnswer.value = playerName || '';
+    userAnswer.value = '';
     userAnswer.disabled = false;
     userAnswer.focus();
     
