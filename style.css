@@ -5,6 +5,7 @@
     --border-color: #5a5f66;
     --glow: rgba(138, 143, 152, 0.3);
     --menu-bg: #000000;
+    --focus-color: #5a9fd4;
 }
 
 [data-theme="light"] {
@@ -14,6 +15,41 @@
     --border-color: #888888;
     --glow: rgba(45, 45, 45, 0.15);
     --menu-bg: #e0e0e0;
+    --focus-color: #2a7cc4;
+}
+
+.skip-link {
+    position: absolute;
+    top: -40px;
+    left: 0;
+    background: var(--text-color);
+    color: var(--bg-color);
+    padding: 8px 16px;
+    z-index: 1000;
+    text-decoration: none;
+    font-weight: 600;
+    transition: top 0.2s;
+}
+
+.skip-link:focus {
+    top: 0;
+}
+
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+:focus-visible {
+    outline: 2px solid var(--focus-color);
+    outline-offset: 2px;
 }
 
 body {
@@ -41,7 +77,7 @@ p {
     position: relative;
 }
 
-#title h3 {
+#title h1 {
     font-size: 2rem;
     letter-spacing: 3px;
     text-transform: uppercase;
@@ -60,7 +96,7 @@ p {
     font-weight: 600;
 }
 
-.mid {
+main {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -68,7 +104,7 @@ p {
     flex: 1;
 }
 
-#number-display h1 {
+#number-display h2 {
     font-size: 10rem;
     margin: 20px 0;
     font-weight: 600;
@@ -88,6 +124,11 @@ p {
     outline: none;
     transition: border-color 0.3s, box-shadow 0.3s, background-color 0.3s, color 0.3s;
     -moz-appearance: textfield;
+}
+
+#answer-input input::placeholder {
+    color: var(--text-color);
+    opacity: 0.5;
 }
 
 #answer-input input::-webkit-outer-spin-button,
@@ -173,6 +214,12 @@ p {
     color: var(--text-color);
     transition: all 1s ease;
     z-index: 100;
+    background: none;
+    border: none;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 #menu-icon:hover {

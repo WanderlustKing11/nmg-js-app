@@ -43,8 +43,11 @@ themeCheckbox.addEventListener('change', function() {
 // Event Listeners
 document.addEventListener('keydown', handleKey);
 menuIcon.addEventListener('click', () => {
-    slideMenu.classList.toggle('open');
+    const isOpen = slideMenu.classList.toggle('open');
     menuIcon.classList.toggle('open');
+    menuIcon.setAttribute('aria-expanded', isOpen);
+    slideMenu.setAttribute('aria-hidden', !isOpen);
+    menuIcon.setAttribute('aria-label', isOpen ? 'Close menu' : 'Open menu');
 });
 
 function handleKey(e) {

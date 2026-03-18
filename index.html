@@ -4,6 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Test your memory by recalling numbers in this simple yet challenging game. Play now!">
+    <meta name="theme-color" content="#0d0d0d">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
@@ -12,59 +14,58 @@
 </head>
 
 <body>
-    <div class='top'>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
+    <header class='top'>
         <div id='title'>
-            <h3>NMG</h3>
+            <h1>NMG</h1>
         </div>
-        <div id='menu-icon'>
+        <button id='menu-icon' aria-label="Open menu" aria-expanded="false" aria-controls="slide-menu">
             <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <circle cx="12" cy="12" r="11" />
                 <line x1="19" y1="12" x2="5" y2="12" />
                 <polyline points="12 19 5 12 12 5" />
             </svg>
-        </div>
-    </div>
+        </button>
+    </header>
 
-    <div id='score'>
+    <div id='score' role="status" aria-live="polite">
         <p>Score: <span id='score-value'>0</span></p>
     </div>
 
-    <div id='slide-menu'>
+    <nav id='slide-menu' role="navigation" aria-label="Menu" aria-hidden="true">
         <div id='menu-content'>
             <div class='theme-toggle'>
-                <span class='theme-label'>Dark Mode</span>
+                <span class='theme-label' id='theme-label-text'>Dark Mode</span>
                 <label class='switch'>
-                    <input type='checkbox' id='theme-checkbox' checked>
+                    <input type='checkbox' id='theme-checkbox' checked aria-labelledby='theme-label-text'>
                     <span class='slider'></span>
                 </label>
             </div>
         </div>
-    </div>
+    </nav>
 
-    <div class='mid'>
-        <div id='number-display'>
-            <h1 id='number-text'>432</h1>
+    <main id="main-content">
+        <div id='number-display' aria-live="polite" aria-atomic="true">
+            <h2 id='number-text' aria-hidden="true">432</h2>
         </div>
 
         <div id="answer-input">
-            <input id='user-answer' type="number" name="">
+            <label for="user-answer" class="visually-hidden">Enter the number</label>
+            <input id='user-answer' type="number" aria-describedby="message" placeholder="Enter number">
         </div>
-    </div>
+    </main>
 
     <div class='bottom'>
-        <div id='message'>
+        <div id='message' role="status" aria-live="polite">
             <p>Hit <strong>Enter</strong> to Start</p>
         </div>
     </div>
 
-    <div class='game-over'>
-        <h1>Game Over</h1>
+    <div class='game-over' role="dialog" aria-modal="true" aria-labelledby="game-over-title" aria-hidden="true">
+        <h1 id="game-over-title">Game Over</h1>
     </div>
-
-
-
-
 
     <script src="script.js"></script>
 </body>
