@@ -66,10 +66,11 @@ const LEADERBOARD_PAGE_SIZE = 20;
 let currentPageStart = null;
 
 async function submitGlobalScore() {
-    if (score <= 0 || !playerName) return;
+    if (score <= 0 || !playerName) return false;
     
     try {
         const scoresRef = collection(db, 'leaderboard');
+        let wasPersonalBest = false;
         
         const q = query(
             scoresRef,
@@ -86,6 +87,7 @@ async function submitGlobalScore() {
                         country: playerCountry,
                         timestamp: serverTimestamp()
                     });
+                    wasPersonalBest = true;
                     console.log('Score updated!');
                 }
             });
@@ -98,11 +100,35 @@ async function submitGlobalScore() {
                 playerId: playerId,
                 timestamp: serverTimestamp()
             });
+            wasPersonalBest = true;
             console.log('New score submitted!');
         }
+        
+        if (wasPersonalBest) {
+            const topScores = await getDocs(query(scoresRef, orderBy('score', 'desc'), limit(1)));
+            if (!topScores.empty) {
+                const topScore = topScores.docs[0].data().score;
+                if (score >= topScore) {
+                    return 'rank1';
+                }
+            }
+            return 'personal';
+        }
+        
+        return false;
     } catch (e) {
         console.error('Error submitting score:', e);
+        return false;
     }
+}
+
+function getRainbowText(text) {
+    let colors = ['#ff0000', '#ff7f00', '#ffff00', '#00ff00', '#0000ff', '#4b0082', '#9400d3'];
+    let result = '';
+    for (let i = 0; i < text.length; i++) {
+        result += `<span style="color: ${colors[i % colors.length]}">${text[i]}</span>`;
+    }
+    return result;
 }
 
 async function fetchLeaderboardPage(forward = true) {
@@ -578,7 +604,7 @@ function correctAnswer() {
     newRound();
 }
 
-function endGame(timedOut = false) {
+async function endGame(timedOut = false) {
     console.log("Game Over! Start again by hitting 'Enter'");
     userAnswer.value = '';
     userAnswer.disabled = true;
@@ -586,13 +612,23 @@ function endGame(timedOut = false) {
     stopTimer();
     resetTimer();
     
+    let scoreType = false;
     if (score > 0) {
-        submitGlobalScore();
+        scoreType = await submitGlobalScore();
     }
     
     let timedOutHtml = timedOut ? `<p class="timed-out">Timed Out</p>` : '';
+    let celebrationHtml = '';
     
-    gameOverScreen.innerHTML = `<h1>Game Over</h1>${timedOutHtml}<p class="final-score">Score: ${score}</p>`;
+    if (scoreType === 'rank1') {
+        celebrationHtml = `<p class="new-high-score">${getRainbowText('New High Score!')}</p>`;
+    } else if (scoreType === 'personal') {
+        celebrationHtml = `<p class="pb-smashed">PB SMASHED!</p><p class="pb-score">${playerName} got ${score} / Lv ${currentLevel}</p>`;
+    } else {
+        celebrationHtml = `<p class="final-score">Score: ${score}</p>`;
+    }
+    
+    gameOverScreen.innerHTML = `<h1>Game Over</h1>${timedOutHtml}${celebrationHtml}`;
     gameOverScreen.style.visibility = "visible";
     message.style.visibility = "hidden";
     
@@ -606,6 +642,8 @@ function endGame(timedOut = false) {
         setupLeaderboardNav();
         
         gameState = 'scorescreen';
+        message.sty
+
         message.style.visibility = "visible";
         message.innerHTML = "Hit <strong>Enter</strong> to Restart";
     }, 2000);

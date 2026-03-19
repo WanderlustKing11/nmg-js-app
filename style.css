@@ -296,6 +296,43 @@ main {
     text-shadow: 0 0 10px rgba(204, 51, 51, 0.5);
 }
 
+.game-over .new-high-score {
+    font-size: 2.5rem;
+    margin-top: 20px;
+    font-family: 'VT323', monospace;
+    font-weight: bold;
+    animation: pulse 1s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+.game-over .pb-smashed {
+    font-size: 2.5rem;
+    margin-top: 20px;
+    font-family: 'VT323', monospace;
+    font-weight: bold;
+    color: #ff9900;
+    text-shadow: 0 0 15px rgba(255, 153, 0, 0.7);
+    animation: shake 0.5s ease-in-out;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px) rotate(-2deg); }
+    75% { transform: translateX(5px) rotate(2deg); }
+}
+
+.game-over .pb-score {
+    font-size: 1.5rem;
+    margin-top: 10px;
+    font-family: 'VT323', monospace;
+    color: var(--text-color);
+    opacity: 0.9;
+}
+
 .global-leaderboard {
     position: absolute;
     top: 50%;
