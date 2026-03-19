@@ -73,13 +73,11 @@ async function submitGlobalScore() {
         
         const q = query(
             scoresRef,
-            where('playerId', '==', playerId),
             where('name', '==', playerName)
         );
         const existing = await getDocs(q);
         
         if (!existing.empty) {
-            let isUpdate = false;
             existing.forEach(docSnap => {
                 if (docSnap.data().score < score) {
                     updateDoc(doc(db, 'leaderboard', docSnap.id), {
@@ -88,10 +86,9 @@ async function submitGlobalScore() {
                         country: playerCountry,
                         timestamp: serverTimestamp()
                     });
-                    isUpdate = true;
+                    console.log('Score updated!');
                 }
             });
-            if (isUpdate) console.log('Score updated!');
         } else {
             await addDoc(collection(db, 'leaderboard'), {
                 name: playerName,
