@@ -6,6 +6,7 @@
     --glow: rgba(138, 143, 152, 0.3);
     --menu-bg: #000000;
     --focus-color: #5a9fd4;
+    --leaderboard-bg: rgba(5, 5, 5, 0.95);
 }
 
 [data-theme="light"] {
@@ -16,6 +17,7 @@
     --glow: rgba(45, 45, 45, 0.15);
     --menu-bg: #e0e0e0;
     --focus-color: #2a7cc4;
+    --leaderboard-bg: rgba(245, 245, 245, 0.95);
 }
 
 .skip-link {
@@ -299,7 +301,7 @@ main {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background-color: rgba(5, 5, 5, 0.95);
+    background-color: var(--leaderboard-bg);
     border: 6px solid #2a7cc4;
     border-radius: 20px;
     padding: 40px 60px;
@@ -309,6 +311,7 @@ main {
     max-height: 80vh;
     overflow-y: auto;
     visibility: hidden;
+    transition: background-color 0.3s ease;
 }
 
 .global-leaderboard h2 {
