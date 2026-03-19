@@ -50,6 +50,7 @@
                 </label>
             </div>
             <a href="#" id='change-player-btn' class='menu-link'>Change Player</a>
+            <a href="#" id='view-leaderboard-btn' class='menu-link'>View Leaderboard</a>
         </div>
     </nav>
 
@@ -79,7 +80,7 @@
             <h1 id="start-screen-title">Numbers Memory Game</h1>
             <p class="start-instructions">Enter your name and press <strong>Enter</strong></p>
             <label for="name-input" class="visually-hidden">Your name</label>
-            <input id='name-input' type="text" maxlength="10" placeholder="Name" autocomplete="off">
+            <input id='name-input' type="text" maxlength="10" placeholder="" autocomplete="off">
         </div>
     </div>
 
@@ -87,12 +88,12 @@
         <h1 id="game-over-title">Game Over</h1>
     </div>
 
-    <div id='high-score-board' class='high-score-board' role="dialog" aria-modal="true"
-        aria-labelledby="high-score-title" aria-hidden="true">
-        <h2 id="high-score-title">High Scores</h2>
+    <div id='global-leaderboard' class='global-leaderboard' role="dialog" aria-modal="true"
+        aria-labelledby="global-leaderboard-title" aria-hidden="true">
     </div>
 
-    <script src="script.js"></script>
+
+    <script src="script.js" type="module"></script>
 </body>
 
 </html>

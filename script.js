@@ -1,4 +1,21 @@
 
+// FIREBASE INITIALIZATION
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit, startAfter, where, getDoc, doc, updateDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyCZZaDZbrA5gHTu1XRKcTp2EyAe00-bT0s",
+    authDomain: "numbers-memory-game-ffbbe.firebaseapp.com",
+    projectId: "numbers-memory-game-ffbbe",
+    storageBucket: "numbers-memory-game-ffbbe.firebasestorage.app",
+    messagingSenderId: "760510242405",
+    appId: "1:760510242405:web:b15e817ac9a92def78308c"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+
 // GLOBAL VARIABLES
 let score = 0
 let currentRGN = 0;
@@ -9,7 +26,154 @@ let timeoutId = null;
 let timerInterval = null;
 let timerRemaining = 5000;
 let playerName = '';
-let isNewHighScore = false;
+let playerId = '';
+let playerCountry = 'USA';
+let gameStartTime = 0;
+
+
+// PLAYER ID & COUNTRY SETUP
+function generatePlayerId() {
+    let id = localStorage.getItem('nmgPlayerId');
+    if (!id) {
+        id = 'p_' + Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
+        localStorage.setItem('nmgPlayerId', id);
+    }
+    return id;
+}
+
+async function detectCountry() {
+    try {
+        let cachedCountry = localStorage.getItem('nmgCountry');
+        if (cachedCountry) {
+            playerCountry = cachedCountry;
+            return;
+        }
+        
+        const response = await fetch('https://ipapi.co/json/');
+        if (response.ok) {
+            const data = await response.json();
+            playerCountry = data.country_code || 'USA';
+            localStorage.setItem('nmgCountry', playerCountry);
+        }
+    } catch (e) {
+        playerCountry = 'USA';
+    }
+}
+
+
+// FIREBASE LEADERBOARD FUNCTIONS
+const LEADERBOARD_PAGE_SIZE = 20;
+let currentPageStart = null;
+
+async function submitGlobalScore() {
+    if (score <= 0 || !playerName) return;
+    
+    try {
+        const scoresRef = collection(db, 'leaderboard');
+        
+        const q = query(
+            scoresRef,
+            where('playerId', '==', playerId),
+            where('name', '==', playerName)
+        );
+        const existing = await getDocs(q);
+        
+        if (!existing.empty) {
+            let isUpdate = false;
+            existing.forEach(docSnap => {
+                if (docSnap.data().score < score) {
+                    updateDoc(doc(db, 'leaderboard', docSnap.id), {
+                        score: score,
+                        level: currentLevel,
+                        country: playerCountry,
+                        timestamp: serverTimestamp()
+                    });
+                    isUpdate = true;
+                }
+            });
+            if (isUpdate) console.log('Score updated!');
+        } else {
+            await addDoc(collection(db, 'leaderboard'), {
+                name: playerName,
+                score: score,
+                level: currentLevel,
+                country: playerCountry,
+                playerId: playerId,
+                timestamp: serverTimestamp()
+            });
+            console.log('New score submitted!');
+        }
+    } catch (e) {
+        console.error('Error submitting score:', e);
+    }
+}
+
+async function fetchLeaderboardPage(forward = true) {
+    try {
+        const scoresRef = collection(db, 'leaderboard');
+        let q;
+        
+        if (forward && !currentPageStart) {
+            q = query(scoresRef, orderBy('score', 'desc'), limit(LEADERBOARD_PAGE_SIZE));
+        } else if (forward && currentPageStart) {
+            q = query(scoresRef, orderBy('score', 'desc'), startAfter(currentPageStart), limit(LEADERBOARD_PAGE_SIZE));
+        } else {
+            currentPageStart = null;
+            q = query(scoresRef, orderBy('score', 'desc'), limit(LEADERBOARD_PAGE_SIZE));
+        }
+        
+        const snapshot = await getDocs(q);
+        const scores = [];
+        
+        snapshot.forEach(doc => {
+            scores.push({ id: doc.id, ...doc.data() });
+        });
+        
+        if (scores.length > 0) {
+            currentPageStart = scores[scores.length - 1].score;
+        }
+        
+        return scores;
+    } catch (e) {
+        console.error('Error fetching leaderboard:', e);
+        return [];
+    }
+}
+
+function renderGlobalLeaderboard(scores, currentPlayerScore) {
+    let html = '<h2>Global Leaderboard</h2>';
+    
+    if (scores.length === 0) {
+        html += '<p>No scores yet. Be the first!</p>';
+    } else {
+        html += '<div class="lb-grid lb-header"><span class="lb-rank">#</span><span class="lb-name">Name</span><span class="lb-score">Score</span><span class="lb-level">Level</span><span class="lb-country">Country</span></div>';
+        scores.forEach((entry, index) => {
+            const isNewHighScore = entry.name === playerName && entry.score === currentPlayerScore && currentPlayerScore > 0;
+            const isCurrentPlayer = entry.name === playerName && !isNewHighScore;
+            
+            let entryClass = 'lb-entry';
+            if (isNewHighScore) {
+                entryClass += ' new-high';
+            } else if (isCurrentPlayer) {
+                entryClass += ' current-player';
+            }
+            
+            const rank = index + 1;
+            html += `<div class="${entryClass}">`;
+            html += `<span class="lb-rank">${rank}</span>`;
+            html += `<span class="lb-name">${entry.name}</span>`;
+            html += `<span class="lb-score">${entry.score}</span>`;
+            html += `<span class="lb-level">Lv ${entry.level}</span>`;
+            html += `<span class="lb-country">${entry.country}</span>`;
+            html += '</div>';
+        });
+    }
+    
+    html += '<div class="leaderboard-nav"><button id="lb-prev" class="lb-btn">&#8592; Prev</button><button id="lb-next" class="lb-btn">Next &#8594;</button></div>';
+    html += '<p class="lb-close">Press <strong>Enter</strong> or <strong>Esc</strong> to close</p>';
+    
+    return html;
+}
 
 
 // DOM Elements
@@ -25,8 +189,9 @@ let gameOverScreen = document.querySelector('.game-over');
 let menuIcon = document.getElementById('menu-icon');
 let slideMenu = document.getElementById('slide-menu');
 let themeCheckbox = document.getElementById('theme-checkbox');
-let highScoreBoard = document.getElementById('high-score-board');
+let globalLeaderboard = document.getElementById('global-leaderboard');
 let changePlayerBtn = document.getElementById('change-player-btn');
+let viewLeaderboardBtn = document.getElementById('view-leaderboard-btn');
 let startScreen = document.getElementById('start-screen');
 let nameInput = document.getElementById('name-input');
 
@@ -116,6 +281,8 @@ function initTheme() {
     }
     
     playerName = localStorage.getItem('nmgPlayerName') || '';
+    playerId = generatePlayerId();
+    detectCountry();
     
     if (playerName) {
         startScreen.classList.add('hidden');
@@ -137,6 +304,11 @@ themeCheckbox.addEventListener('change', function () {
 
 // Event Listeners
 document.addEventListener('keydown', handleKey);
+
+userAnswer.addEventListener('input', function() {
+    this.value = this.value.replace(/[^0-9]/g, '');
+});
+
 menuIcon.addEventListener('click', () => {
     const isOpen = slideMenu.classList.toggle('open');
     menuIcon.classList.toggle('open');
@@ -188,7 +360,59 @@ changePlayerBtn.addEventListener('click', () => {
     nameInput.focus();
 });
 
+viewLeaderboardBtn.addEventListener('click', async (e) => {
+    e.preventDefault();
+    slideMenu.classList.remove('open');
+    menuIcon.classList.remove('open');
+    menuIcon.setAttribute('aria-expanded', false);
+    slideMenu.setAttribute('aria-hidden', true);
+    menuIcon.setAttribute('aria-label', 'Open menu');
+    
+    currentPageStart = null;
+    const scores = await fetchLeaderboardPage(true);
+    globalLeaderboard.innerHTML = renderGlobalLeaderboard(scores, score);
+    globalLeaderboard.style.visibility = "visible";
+    
+    document.getElementById('lb-prev').addEventListener('click', async () => {
+        currentPageStart = null;
+        const prevScores = await fetchLeaderboardPage(false);
+        globalLeaderboard.innerHTML = renderGlobalLeaderboard(prevScores, score);
+        setupLeaderboardNav();
+    });
+    
+    document.getElementById('lb-next').addEventListener('click', async () => {
+        const nextScores = await fetchLeaderboardPage(true);
+        globalLeaderboard.innerHTML = renderGlobalLeaderboard(nextScores, score);
+        setupLeaderboardNav();
+    });
+    
+    gameState = 'scorescreen';
+});
+
+function setupLeaderboardNav() {
+    document.getElementById('lb-prev').addEventListener('click', async () => {
+        currentPageStart = null;
+        const prevScores = await fetchLeaderboardPage(false);
+        globalLeaderboard.innerHTML = renderGlobalLeaderboard(prevScores, score);
+        setupLeaderboardNav();
+    });
+    
+    document.getElementById('lb-next').addEventListener('click', async () => {
+        const nextScores = await fetchLeaderboardPage(true);
+        globalLeaderboard.innerHTML = renderGlobalLeaderboard(nextScores, score);
+        setupLeaderboardNav();
+    });
+}
+
 function handleKey(e) {
+    if (e.key === 'Escape' && globalLeaderboard.style.visibility === 'visible') {
+        globalLeaderboard.style.visibility = "hidden";
+        gameState = 'initial';
+        message.innerHTML = 'Hit <strong>Enter</strong> to Start<br><br>You have 5 seconds to answer.';
+        message.classList.add('initial-message');
+        return;
+    }
+    
     if (e.key === 'Enter') {
         if (inputCooldown) return;
 
@@ -210,7 +434,7 @@ function handleKey(e) {
             
         } else if (gameState === 'scorescreen') {
             inputCooldown = true;
-            highScoreBoard.style.visibility = "hidden";
+            globalLeaderboard.style.visibility = "hidden";
             gameState = 'playing';
             score = 0;
             currentLevel = 1;
@@ -258,85 +482,7 @@ function handleKey(e) {
     }
 }
 
-// HIGH SCORE FUNCTIONS
-function getHighScores() {
-    let scores = localStorage.getItem('nmgHighScores');
-    return scores ? JSON.parse(scores) : [];
-}
-
-function saveHighScores(scores) {
-    localStorage.setItem('nmgHighScores', JSON.stringify(scores));
-}
-
-function isHighScore(newScore, playerName) {
-    let scores = getHighScores();
-    let existingPlayer = scores.find(s => s.name === playerName);
-    
-    if (existingPlayer) {
-        return newScore > existingPlayer.score;
-    }
-    
-    if (scores.length < 10) return true;
-    return newScore > scores[scores.length - 1].score;
-}
-
-function saveHighScore(name, newScore, level) {
-    let scores = getHighScores();
-    let upperName = name.toUpperCase();
-    let existingIndex = scores.findIndex(s => s.name === upperName);
-    
-    if (existingIndex !== -1) {
-        if (newScore > scores[existingIndex].score) {
-            scores[existingIndex] = {
-                name: upperName,
-                score: newScore,
-                level: level,
-                date: Date.now()
-            };
-            scores.sort((a, b) => b.score - a.score);
-            saveHighScores(scores);
-        }
-        return scores;
-    }
-    
-    let newEntry = {
-        name: upperName,
-        score: newScore,
-        level: level,
-        date: Date.now()
-    };
-    
-    scores.push(newEntry);
-    scores.sort((a, b) => b.score - a.score);
-    scores = scores.slice(0, 10);
-    saveHighScores(scores);
-    return scores;
-}
-
-function renderScoreBoard(currentPlayerScore = 0, currentPlayerLevel = 1) {
-    let scores = getHighScores();
-    let maxDisplay = Math.min(scores.length, 10);
-    let scoreHtml = '';
-    
-    for (let i = 0; i < maxDisplay; i++) {
-        let score = scores[i];
-        let isCurrentPlayer = score.score === currentPlayerScore && currentPlayerScore > 0;
-        let currentClass = isCurrentPlayer ? 'current-score' : '';
-        scoreHtml += `<p class="${currentClass}">${i + 1}. ${score.name} - ${score.score} (Lv ${score.level})</p>`;
-    }
-    
-    return scoreHtml;
-}
-
-function getRainbowText(text) {
-    let colors = ['#ff0000', '#ff7f00', '#ffff00', '#00ff00', '#0000ff', '#4b0082', '#9400d3'];
-    let result = '';
-    for (let i = 0; i < text.length; i++) {
-        result += `<span style="color: ${colors[i % colors.length]}">${text[i]}</span>`;
-    }
-    return result;
-}
-
+// FORMAT NUMBER WITH SPACES
 function formatNumberWithSpaces(num) {
     let str = num.toString();
     let len = str.length;
@@ -376,12 +522,12 @@ function startGame() {
     resetTimer();
     numberText.style.visibility = "hidden";
     gameOverScreen.style.visibility = "hidden";
-    highScoreBoard.style.visibility = "hidden";
+    globalLeaderboard.style.visibility = "hidden";
     userAnswer.value = '';
-    userAnswer.disabled = false;
+    userAnswer.disabled = true;
     userAnswer.focus();
     
-    message.innerHTML = 'Hit <strong>Enter</strong> to Start<br><br>You have 5 seconds to answer.';
+    message.innerHTML = 'Hit <strong>Enter</strong> to Start<br><br><span class="timeout-hint">You have 5 seconds to answer.</span>';
     message.classList.add('initial-message');
 }
 
@@ -390,6 +536,7 @@ function newRound() {
     currentRGN = rng();
     numberText.innerText = formatNumberWithSpaces(currentRGN);
     message.style.visibility = "hidden";
+    gameStartTime = Date.now();
 
     let digitCount = currentRGN.toString().length;
     let flashDuration = 1000;
@@ -442,28 +589,26 @@ function endGame(timedOut = false) {
     stopTimer();
     resetTimer();
     
-    isNewHighScore = isHighScore(score, playerName);
-    
-    if (isNewHighScore && score > 0) {
-        saveHighScore(playerName, score, currentLevel);
+    if (score > 0) {
+        submitGlobalScore();
     }
     
     let timedOutHtml = timedOut ? `<p class="timed-out">Timed Out</p>` : '';
-    let scoreLabel = isNewHighScore && score > 0 ? 
-        `<p class="new-high-score">${getRainbowText('New High Score!')}</p><p class="final-score">Score: ${score}</p>` : 
-        `<p class="final-score">Score: ${score}</p>`;
     
-    gameOverScreen.innerHTML = `<h1>Game Over</h1>${timedOutHtml}${scoreLabel}`;
+    gameOverScreen.innerHTML = `<h1>Game Over</h1>${timedOutHtml}<p class="final-score">Score: ${score}</p>`;
     gameOverScreen.style.visibility = "visible";
     message.style.visibility = "hidden";
     
-    setTimeout(() => {
-        gameState = 'scorescreen';
+    setTimeout(async () => {
         gameOverScreen.style.visibility = "hidden";
         
-        let scoresHtml = renderScoreBoard(score, currentLevel);
-        highScoreBoard.innerHTML = `<h2>High Scores</h2>${scoresHtml}`;
-        highScoreBoard.style.visibility = "visible";
+        currentPageStart = null;
+        const scores = await fetchLeaderboardPage(true);
+        globalLeaderboard.innerHTML = renderGlobalLeaderboard(scores, score);
+        globalLeaderboard.style.visibility = "visible";
+        setupLeaderboardNav();
+        
+        gameState = 'scorescreen';
         message.style.visibility = "visible";
         message.innerHTML = "Hit <strong>Enter</strong> to Restart";
     }, 2000);
